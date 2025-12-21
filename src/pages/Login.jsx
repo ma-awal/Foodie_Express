@@ -65,7 +65,7 @@ const Login = () => {
               required
             />
           </div>
-          <button className="btn btn-primary-custom w-100 py-2 shadow-sm">
+          <button className="btn btn-primary-custom   w-100 py-2 shadow-sm">
             {isLogin ? 'Login' : 'Create Account'}
           </button>
         </form>

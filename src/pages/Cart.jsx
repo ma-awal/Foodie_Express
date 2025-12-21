@@ -11,7 +11,7 @@ const Cart = () => {
   if (cart.length === 0)
     return (
       <div className="text-center mt-5">
-        <h2>Cart is Empty 🛒</h2>
+        <h2 className="text-dark">Cart is Empty 🛒</h2>
         <Link to="/" className="btn btn-primary-custom mt-3">
           Go to Menu
         </Link>

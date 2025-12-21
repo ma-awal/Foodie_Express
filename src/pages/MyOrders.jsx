@@ -87,7 +87,7 @@ const MyOrders = () => {
   if (!user)
     return (
       <div className="container text-center mt-5" style={{ minHeight: '60vh' }}>
-        <h3 className="text-white">Please Login first! 🔒</h3>
+        <h3 className="text-black">Please Login first! 🔒</h3>
         <Link to="/login" className="btn btn-primary-custom mt-3">
           Go to Login
         </Link>
@@ -96,8 +96,8 @@ const MyOrders = () => {
 
   if (loading)
     return (
-      <div className="text-center mt-5 text-primary-custom">
-        <h3>Loading Orders...</h3>
+      <div className="text-center mt-5 text-dark">
+        <h3 className="text-black">Loading Orders...</h3>
       </div>
     );
 
