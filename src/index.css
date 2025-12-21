@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root {
+  --text-dark: #333;
+  --primary: #ff4500; /* Food Orange */
+  --primary-hover: #ff6347;
+  --bg-body: #f7f7f7; /* Deep Black */
+  --bg-card: #151515; /* Card BG */
+  --bg-dark: #333;
+  --bg-input: #222222; /* Input BG */
+  --text-main: #ffffff; /* Pure White */
+  --text-muted: #bbbbbb; /* Light Grey (Readable) */
+  --border: #333333;
+}
+
+body {
+  background-color: var(--bg-body) !important;
+  color: var(--text-main);
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- TEXT VISIBILITY FIXES (সব লেখা সাদা হবে) --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+p,
+span,
+div,
+li,
+label {
+  color: #ffffff;
+}
+a {
+  text-decoration: none;
+  color: white;
+}
+
+/* Bootstrap Text Muted Override */
+.text-off {
+  color: #aaaaaa !important;
+}
+.text-primary-custom {
+  color: var(--primary) !important;
+}
+.text-custom-dark {
+  color: var(--text-dark) !important;
+} /* ব্যাজ বা বাটনের জন্য */
+
+/* --- INPUT FIELDS FIX (ডার্ক মোড) --- */
+.form-control,
+.form-select,
+textarea {
+  background-color: var(--bg-input) !important;
+  border: 1px solid #444 !important;
+  color: white !important; /* টাইপ করার সময় লেখা সাদা */
+  border-radius: 10px;
+  padding: 12px;
+}
+.form-control:focus {
+  border-color: var(--primary) !important;
+  box-shadow: none;
+}
+::placeholder {
+  color: #777 !important;
+}
+
+/* --- CARD DESIGN --- */
+.bg-custom {
+  background: var(--primary) !important;
+}
+.bg-custom-dark {
+  background: var(--bg-dark);
+}
+.card-custom {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  overflow: hidden;
+  transition: 0.3s;
+}
+.card-custom:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(255, 69, 0, 0.2);
+}
+
+/* --- BUTTONS --- */
+.btn-primary-custom {
+  background: var(--primary) !important;
+  color: white !important;
+  border: none;
+  font-weight: 600;
+  padding: 10px 25px;
+  border-radius: 50px;
+  transition: 0.3s;
+}
+.btn-primary-custom:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+/* Navbar Fix */
+.navbar {
+  background: rgba(0, 0, 0, 0.95) !important;
+  border-bottom: 1px solid var(--border);
+}
+.hover-primary {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hover-primary:hover {
+  background: var(--primary-hover) !important;
+}
