@@ -1,6 +1,3 @@
-// ... imports same as before ... (FoodContext, db, etc.)
-// শুধু ফর্মের ক্যাটাগরি অংশটুকু আপডেট করুন বা পুরো ফাইল রিপ্লেস করুন
-
 import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { FoodContext } from '../context/FoodContext';
 import { db } from '../firebase';
@@ -17,6 +14,8 @@ import {
 import { toast } from 'react-toastify';
 import {
   FaTrash,
+  FaEdit,
+  FaTimes,
   FaCheckCircle,
   FaMotorcycle,
   FaFire,
@@ -31,7 +30,7 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [loading, setLoading] = useState(false);
 
-  // New Food State
+  // Form State
   const [newItem, setNewItem] = useState({
     name: '',
     price: '',
@@ -40,7 +39,10 @@ const Admin = () => {
     desc: '',
   });
 
-  // Fetch Orders
+  // 👇 এডিট মোড ট্র্যাক করার জন্য নতুন স্টেট
+  const [editingId, setEditingId] = useState(null);
+
+  // 1. Fetch Orders
   useEffect(() => {
     if (isAdmin) {
       const q = query(collection(db, 'orders'), orderBy('timestamp', 'desc'));
@@ -51,6 +53,7 @@ const Admin = () => {
     }
   }, [isAdmin]);
 
+  // 2. Stats
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce(
       (acc, order) => acc + (order.total || 0),
@@ -63,14 +66,56 @@ const Admin = () => {
     };
   }, [orders]);
 
-  const handleAddFood = async (e) => {
+  // --- ACTIONS ---
+
+  // ৩. অ্যাড অথবা আপডেট হ্যান্ডেল করা
+  const handleSubmitFood = async (e) => {
     e.preventDefault();
     if (!newItem.name || !newItem.price) return;
+
     setLoading(true);
-    await addDoc(collection(db, 'foods'), {
-      ...newItem,
-      price: Number(newItem.price),
-    });
+    try {
+      if (editingId) {
+        // 🔥 আপডেট লজিক
+        await updateDoc(doc(db, 'foods', editingId), {
+          ...newItem,
+          price: Number(newItem.price),
+        });
+        toast.success('Item Updated Successfully! ✅');
+        setEditingId(null); // এডিট মোড বন্ধ
+      } else {
+        // 🔥 অ্যাড লজিক
+        await addDoc(collection(db, 'foods'), {
+          ...newItem,
+          price: Number(newItem.price),
+        });
+        toast.success('Item Added to Menu! 🍔');
+      }
+      // ফর্ম রিসেট
+      setNewItem({
+        name: '',
+        price: '',
+        category: 'Burger',
+        image: '',
+        desc: '',
+      });
+    } catch (err) {
+      toast.error('Operation Failed');
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  // ৪. এডিট বাটনে ক্লিক করলে এই ফাংশন কল হবে
+  const handleEditClick = (item) => {
+    setNewItem(item); // ফর্মে ডাটা বসানো
+    setEditingId(item.id); // আইডি সেট করা
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // উপরে স্ক্রল করা
+  };
+
+  // ৫. এডিট ক্যানসেল করার ফাংশন
+  const cancelEdit = () => {
+    setEditingId(null);
     setNewItem({
       name: '',
       price: '',
@@ -78,12 +123,10 @@ const Admin = () => {
       image: '',
       desc: '',
     });
-    toast.success('Item Added! 🍔');
-    setLoading(false);
   };
 
   const handleDeleteFood = async (id) => {
-    if (window.confirm('Remove?')) await deleteDoc(doc(db, 'foods', id));
+    if (window.confirm('Remove item?')) await deleteDoc(doc(db, 'foods', id));
   };
   const updateStatus = async (id, status) => {
     await updateDoc(doc(db, 'orders', id), { status });
@@ -152,7 +195,7 @@ const Admin = () => {
                   <span className="badge bg-warning text-dark me-2">
                     {order.status}
                   </span>{' '}
-                  <span className="text-off small">
+                  <span className="text-muted small">
                     #{order.id.slice(0, 5)}
                   </span>
                 </div>
@@ -164,11 +207,11 @@ const Admin = () => {
                 <div className="col-md-6">
                   <p className="mb-0 fw-bold">
                     {order.customer?.name}{' '}
-                    <span className="text-off small">
+                    <span className="text-muted small">
                       ({order.customer?.phone})
                     </span>
                   </p>
-                  <p className="small  text-off">{order.customer?.address}</p>
+                  <p className="small text-muted">{order.customer?.address}</p>
                   <span
                     className={`badge ${
                       order.paymentMethod?.includes('Bkash')
@@ -245,12 +288,32 @@ const Admin = () => {
         </div>
       )}
 
-      {/* --- MENU TAB (Add Combo Here) --- */}
+      {/* --- MENU TAB (Add / Edit) --- */}
       {activeTab === 'menu' && (
         <div className="animate__animated animate__fadeIn">
-          <div className="card-custom p-4 mb-4">
-            <h4 className="mb-3">Add Item / Combo</h4>
-            <form onSubmit={handleAddFood}>
+          {/* Form Section */}
+          <div
+            className={`card-custom p-4 mb-4 ${
+              editingId ? 'border-warning' : ''
+            }`}
+          >
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h4
+                className={editingId ? 'text-warning' : 'text-primary-custom'}
+              >
+                {editingId ? '✏️ Edit Item' : '➕ Add New Item'}
+              </h4>
+              {editingId && (
+                <button
+                  onClick={cancelEdit}
+                  className="btn btn-sm btn-outline-light"
+                >
+                  <FaTimes /> Cancel Edit
+                </button>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmitFood}>
               <div className="row g-3">
                 <div className="col-md-6">
                   <input
@@ -260,7 +323,7 @@ const Admin = () => {
                     onChange={(e) =>
                       setNewItem({ ...newItem, name: e.target.value })
                     }
-                    placeholder="Name (e.g. Family Combo)"
+                    placeholder="Name"
                   />
                 </div>
                 <div className="col-md-3">
@@ -275,8 +338,6 @@ const Admin = () => {
                     placeholder="Price"
                   />
                 </div>
-
-                {/* 👇 এখানে Combo অপশন যোগ করা হয়েছে */}
                 <div className="col-md-3">
                   <select
                     className="form-select"
@@ -290,10 +351,9 @@ const Admin = () => {
                     <option>Sandwich</option>
                     <option>French Fry</option>
                     <option>Cold Drinks</option>
-                    <option value="Combo">🔥 Combo / Package</option>
+                    <option>Combo</option>
                   </select>
                 </div>
-
                 <div className="col-12">
                   <input
                     required
@@ -312,21 +372,29 @@ const Admin = () => {
                     onChange={(e) =>
                       setNewItem({ ...newItem, desc: e.target.value })
                     }
-                    placeholder="Description (e.g. 2 Burgers + 2 Cokes)"
+                    placeholder="Description"
                   />
                 </div>
                 <div className="col-12">
                   <button
                     disabled={loading}
-                    className="btn btn-primary-custom w-100"
+                    className={`btn w-100 ${
+                      editingId ? 'btn-warning text-dark' : 'btn-primary-custom'
+                    }`}
                   >
-                    Add to Menu
+                    {loading
+                      ? 'Processing...'
+                      : editingId
+                      ? 'Update Item'
+                      : 'Add to Menu'}
                   </button>
                 </div>
               </div>
             </form>
           </div>
-          {/* List */}
+
+          {/* Menu List */}
+          <h4 className="mb-3">Current Menu</h4>
           <div className="table-responsive">
             <table className="table table-dark table-hover align-middle">
               <thead>
@@ -334,12 +402,17 @@ const Admin = () => {
                   <th>Img</th>
                   <th>Name</th>
                   <th>Price</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {foodItems.map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    className={
+                      editingId === item.id ? 'table-active border-warning' : ''
+                    }
+                  >
                     <td>
                       <img
                         src={item.image}
@@ -351,15 +424,23 @@ const Admin = () => {
                     </td>
                     <td>
                       {item.name} <br />{' '}
-                      <small className="text-off">{item.category}</small>
+                      <small className="text-muted">{item.category}</small>
                     </td>
                     <td className="text-primary-custom fw-bold">
                       ৳{item.price}
                     </td>
                     <td>
                       <button
+                        onClick={() => handleEditClick(item)}
+                        className="btn btn-sm btn-outline-info me-2"
+                        title="Edit"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
                         onClick={() => handleDeleteFood(item.id)}
                         className="btn btn-sm btn-outline-danger"
+                        title="Delete"
                       >
                         <FaTrash />
                       </button>
